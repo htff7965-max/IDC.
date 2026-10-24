@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>IDC</title>
+<link rel="icon" href="icons/icon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<div id="app" style="padding-bottom:30px"></div>
+<script type="module">
+// الصفحة العامة اللي بتفتح لما حد يقرّب كارت الـ NFC أو يمسح الـ QR (من غير تسجيل دخول)
+import { sb } from './js/api.js';
+import { t, apply, lang, setLang } from './js/i18n.js';
+import { esc, mi } from './js/ui.js';
+apply();
+const app = document.getElementById('app');
+const h = new URLSearchParams(location.search).get('h') || '';
+const { data } = await sb.rpc('get_public_profile', { h });
+const draw = () => {
+  apply();
+  const lb = `<div class="c"><button class="bt t" id="lg">${lang() === 'ar' ? 'English' : 'العربية'}</button></div>`;
+  if (!data) { app.innerHTML = `${lb}<div class="ac c"><div class="wm">IDC</div><p class="mu">${t('pub_none')}</p></div>`; }
+  else app.innerHTML = `${lb}<div class="ac"><div class="wm">IDC</div><div class="c" style="margin:14px 0"><h2>${esc(data.full_name)}</h2><div class="mu">${t('role_' + data.role)}${data.governorate ? ' · ' + esc(data.governorate) : ''}</div></div>${(data.items || []).map(i => `<div class="rw"><div class="g"><b>${esc(i.title)}</b><div class="mu sm" dir="auto">${esc(i.value || '')}</div></div>${i.issuer ? `<span class="tag ${i.verified ? 'ok' : 'wn'}" style="margin:0">${i.verified ? '✓' : '!'} ${esc(i.issuer)}</span>` : ''}</div>`).join('') || `<p class="mu c">${t('empty')}</p>`}</div>`;
+  document.getElementById('lg').onclick = () => { setLang(lang() === 'ar' ? 'en' : 'ar'); draw(); };
+};
+draw();
+</script>
+</body>
+</html>
